@@ -7,9 +7,61 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
+
+
+add_library(sen0412_sensor
+  src/h3lis200dl.cpp
+)
+
+target_include_directories(sen0412_sensor PUBLIC
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+
+# ROS 2 node
+add_executable(sen0412_node
+  src/sen0412_node.cpp
+)
+
+target_link_libraries(sen0412_node
+  sen0412_sensor
+)
+
+ament_target_dependencies(sen0412_node
+  rclcpp
+  sensor_msgs
+)
+
+# Install executable/library
+install(
+  TARGETS
+    sen0412_sensors
+    sen0412_node
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
+
+
+# Install public headers
+install(
+  DIRECTORY include/
+  DESTINATION include
+)
+
+install(
+  DIRECTORY
+    launch
+    config
+  DESTINATION share/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

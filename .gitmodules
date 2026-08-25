@@ -1,0 +1,3 @@
+[submodule "third_party/STMems_Standard_C_drivers/h3lis331dl-pid"]
+	path = third_party/STMems_Standard_C_drivers/h3lis331dl-pid
+	url = https://github.com/STMicroelectronics/h3lis331dl-pid.git
