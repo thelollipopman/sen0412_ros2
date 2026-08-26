@@ -2,6 +2,7 @@
 #include <memory>
 #include <functional>
 #include <stdexcept>
+#include <cmath>
 
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/imu.hpp"
@@ -21,9 +22,9 @@ public:
         declare_parameter<std::string>("i2c_device", "/dev/i2c-1");
         declare_parameter<std::string>("frame_id", "imu_link");
         declare_parameter<int>("i2c_address", 0x19);
-        declare_parameter<int>("range", 100);
-        declare_parameter<double>("output_data_rate", 1000);
-        declare_parameter<double>("publish_rate", 200);
+        declare_parameter<double>("range", 200.0);
+        declare_parameter<double>("output_data_rate", 1000.0);
+        declare_parameter<double>("publish_rate", 200.0);
 
         // i2c device file
         const auto i2c_device = get_parameter("i2c_device").as_string();
@@ -31,44 +32,13 @@ public:
         // publisher
         const int i2c_address = get_parameter("i2c_address").as_int();
         const std::string frame_id = get_parameter("frame_id").as_string();
-        const int range = get_parameter("range").as_int();
+        const double range = get_parameter("range").as_double();
         const double output_data_rate = get_parameter("output_data_rate").as_double();
         const double publish_rate = get_parameter("publish_rate").as_double();
-        
-        
-
-        // User input checking output data rate
-        sen0412_ros2::OutputDataRate output_data_rate_e; 
-        switch (static_cast<OutputDataRate>(output_data_rate)) {
-            case OutputDataRate::e0HZ:
-            case OutputDataRate::e0_5HZ:
-            case OutputDataRate::e1HZ:
-            case OutputDataRate::e2HZ:
-            case OutputDataRate::e5HZ:
-            case OutputDataRate::e10HZ:
-            case OutputDataRate::e50HZ:
-            case OutputDataRate::e100HZ:
-            case OutputDataRate::e400HZ:
-            case OutputDataRate::e1000HZ:
-                output_data_rate_e = static_cast<OutputDataRate>(output_data_rate);
-                break;
-            default:
-                throw std::runtime_error("Invalid output data rate for H3LIS200DL");
-        }
-
-        sen0412_ros2::Range range_e;
-        switch (static_cast<Range>(range)) {
-            case Range::e100g:
-            case Range::e200g:
-                range_e = static_cast<Range>(range);
-                break;
-            default:
-                throw std::runtime_error("Invalid range for H3LIS200DL");
-        }
 
         accelerometer_ = std::make_unique<sen0412_ros2::H3LIS200DL>(i2c_device, static_cast<uint8_t>(i2c_address));
 
-        accelerometer_->initialize(output_data_rate_e, range_e);
+        accelerometer_->initialize(output_data_rate, range);
 
         accelerometer_publisher_ = create_publisher<sensor_msgs::msg::Imu>("accelerometer", rclcpp::SensorDataQoS());
 

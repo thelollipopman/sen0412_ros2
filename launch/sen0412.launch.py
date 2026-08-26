@@ -21,11 +21,11 @@ def launch_setup(context):
             "config",
             config_file
         )
-
+        
     node = Node(
         package="sen0412_ros2",
         executable="sen0412_node",
-        name="sen04120_node",
+        name="sen0412_node",
         output="screen",
         parameters=[config_file],
     )

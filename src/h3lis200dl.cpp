@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <vector>
+#include <cmath>
 
 namespace sen0412_ros2 {
 
@@ -42,8 +43,8 @@ H3LIS200DL::~H3LIS200DL(){
 };
 
 void H3LIS200DL::initialize(
-    OutputDataRate output_data_rate,
-    Range range
+    double output_data_rate,
+    double range
 ){
     // Check that H3LIS200DL chip id (who_am_i) matches with datasheet
     uint8_t who_am_i = read_register(REG_WHO_AM_I);
@@ -52,9 +53,45 @@ void H3LIS200DL::initialize(
         throw std::runtime_error("Unexpected device ID, should be 0x32");
     }
 
+    // User input validation
+    OutputDataRateMask output_data_rate_mask;
+    if (is_close(output_data_rate, 0.5)) {
+        output_data_rate_mask = OutputDataRateMask::e0_5HZ;
+    } else if (is_close(output_data_rate, 1.0)) {
+        output_data_rate_mask = OutputDataRateMask::e1HZ;
+    } else if (is_close(output_data_rate, 2.0)) {
+        output_data_rate_mask = OutputDataRateMask::e2HZ;
+    } else if (is_close(output_data_rate, 5.0)) {
+        output_data_rate_mask = OutputDataRateMask::e5HZ;
+    } else if (is_close(output_data_rate, 10.0)) {
+        output_data_rate_mask = OutputDataRateMask::e10HZ;
+    } else if (is_close(output_data_rate, 50.0)) {
+        output_data_rate_mask = OutputDataRateMask::e50HZ;
+    } else if (is_close(output_data_rate, 100.0)) {
+        output_data_rate_mask = OutputDataRateMask::e100HZ;
+    } else if (is_close(output_data_rate, 400.0)) {
+        output_data_rate_mask = OutputDataRateMask::e400HZ;
+    } else if (is_close(output_data_rate, 1000.0)) {
+        output_data_rate_mask = OutputDataRateMask::e1000HZ;
+    } else {
+        throw std::runtime_error("Invalid output data rate for H3LIS200DL: " + std::to_string(output_data_rate));
+    }
+    output_data_rate_ = output_data_rate;
+
+    RangeMask range_mask;
+    if (is_close(range, 100.0)) {
+        range_mask = RangeMask::e100g;
+    } else if (is_close(range, 200.0)) {
+        range_mask = RangeMask::e200g;
+    } else {
+        throw std::runtime_error("Invalid range for H3LIS200DL: " + std::to_string(range));
+    }
+    range_ = range;
+
+
     // Set sensor parameters
-    set_output_data_rate(output_data_rate);
-    set_range(range);
+    set_output_data_rate(output_data_rate_mask);
+    set_range(range_mask);
 }
 
 void H3LIS200DL::read_registers(
@@ -104,21 +141,18 @@ void H3LIS200DL::write_register(uint8_t reg, uint8_t value)
     }
 }
 
-void H3LIS200DL::set_output_data_rate(OutputDataRate rate){
+void H3LIS200DL::set_output_data_rate(OutputDataRateMask rate_mask){
     uint8_t value = read_register(REG_CTRL_REG1);
-    value = value & 0b11111000;
-    value = value | static_cast<uint8_t>(rate);
+    
+    // output data rate is set by first 5 bits: . Leave remaining bits unchanged.
+    value = value & 0b00000111;
+    value = value | static_cast<uint8_t>(rate_mask);
     write_register(REG_CTRL_REG1, value);
 }
 
-void H3LIS200DL::set_range(Range range){
+void H3LIS200DL::set_range(RangeMask range_mask){
     uint8_t value = read_register(REG_CTRL_REG4);
-    if (range == Range::e100g){
-        value = value & (~0x10);
-    } else { // range == Range::e200g
-        value = value | 0x10;
-    }
-    range_ = static_cast<int>(range);
+    value = value | static_cast<uint8_t>(range_mask);
     write_register(REG_CTRL_REG4, value);
 }
 
@@ -135,6 +169,9 @@ Acceleration H3LIS200DL::read(){
     };
 }
 
+bool is_close(double a, double b) {
+    return std::abs(a - b) < std::numeric_limits<double>::epsilon();
+}
 
 
 

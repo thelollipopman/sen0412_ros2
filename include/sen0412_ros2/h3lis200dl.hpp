@@ -16,8 +16,7 @@ struct Acceleration
     double z;
 };
 
-// Output data rate enum
-enum OutputDataRate: uint8_t{
+enum class OutputDataRateMask: uint8_t{
     e0HZ = 0,/*Measurement off*/
     e0_5HZ = 0x40,/*0.5 hz*/
     e1HZ  = 0x60,
@@ -30,10 +29,12 @@ enum OutputDataRate: uint8_t{
     e1000HZ = 0x38,
 };
 
-enum Range{
-    e100g = 100,/**< ±100g>*/
-    e200g = 200,/**< ±200g>*/       
+enum class RangeMask: uint8_t{
+    e100g = 0x0,/**< ±100g>*/
+    e200g = 0x10,/**< ±200g>*/       
 };
+
+bool is_close(double a, double b);
 
 
 class H3LIS200DL {
@@ -51,8 +52,8 @@ public:
 
     // Set sensor settings
     void initialize(
-        OutputDataRate output_data_rate,
-        Range range
+        double output_data_rate_mask,
+        double range_mask
     );
 
     Acceleration read();
@@ -80,7 +81,8 @@ private:
 
     // Member variables
     int fd_;
-    int range_;
+    float range_;
+    float output_data_rate_;
 
     // Helper functions for I2C read write
     void write_register(
@@ -96,9 +98,10 @@ private:
         std::size_t length);
 
     // Setter functions
-    void set_output_data_rate(OutputDataRate rate);
+    void set_output_data_rate(OutputDataRateMask rate_mask);
 
-    void set_range(Range range);
+    void set_range(RangeMask range_mask);
+
 };
 }
 #endif
