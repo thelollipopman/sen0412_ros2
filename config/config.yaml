@@ -4,7 +4,7 @@ sen0412_node:
     # I2C device file: check available buses using "ls /dev/i2c*" or "i2cdetect -l"
     i2c_device: "/dev/i2c-1"                            # First I2C bus for Raspberry Pi 5
     frame_id: "imu_link"
-    i2c_address: 25              # 0x19 # I2C address in decimal form
-    range: 200               # Range of measurement (±g)
-    output_data_rate: 1000   # Output Data Rate (Hz): should be >= publish_rate
-    publish_rate: 200        # ROS2 publishing frequency
+    i2c_address: 25                                     # 0x19 # I2C address in decimal form
+    range: 200                                          # Range of measurement (±g)
+    output_data_rate: 1000                              # Output Data Rate (Hz): should be >= publish_rate
+    publish_rate: 200                                   # ROS2 publishing frequency
