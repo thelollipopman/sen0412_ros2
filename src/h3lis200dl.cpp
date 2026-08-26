@@ -122,7 +122,7 @@ uint8_t H3LIS200DL::read_register(uint8_t reg)
     // Read 1 register into value
     read_registers(reg, &value, 1);
 
-    std::cout << value << std::endl;
+    std::cout << static_cast<int>(value) << std::endl;
 
     return value;
 }
