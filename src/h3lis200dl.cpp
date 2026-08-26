@@ -122,8 +122,6 @@ uint8_t H3LIS200DL::read_register(uint8_t reg)
     // Read 1 register into value
     read_registers(reg, &value, 1);
 
-    std::cout << static_cast<int>(value) << std::endl;
-
     return value;
 }
 
@@ -155,6 +153,7 @@ void H3LIS200DL::set_output_data_rate(OutputDataRateMask rate_mask){
 
 void H3LIS200DL::set_range(RangeMask range_mask){
     uint8_t value = read_register(REG_CTRL_REG4);
+    value = value & 0b00010000;
     value = value | static_cast<uint8_t>(range_mask);
     write_register(REG_CTRL_REG4, value);
 }
