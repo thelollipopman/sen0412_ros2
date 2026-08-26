@@ -13,7 +13,7 @@ using namespace std::chrono_literals;
 class Sen0412Node : public rclcpp::Node
 {
 public:
-    SEN0412Node():: Node("sen0142_node"){
+    Sen0412Node(): Node("sen0142_node"){
 
         // rclcpp parameter declarations
         declare_parameter<std::string>("i2c_device", "/dev/i2c-1");
