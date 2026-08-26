@@ -10,6 +10,8 @@
 
 using namespace std::chrono_literals;
 
+namespace sen0412_ros2 {
+
 class Sen0412Node : public rclcpp::Node
 {
 public:
@@ -27,16 +29,16 @@ public:
         const auto i2c_device = get_parameter("i2c_device").as_string();
         
         // publisher
-        const int i2c_address = get_parameter("address").as_int();
-        frame_id = get_paramter("frame_id").as_string();
+        const int i2c_address = get_parameter("i2c_address").as_int();
+        const std::string frame_id = get_parameter("frame_id").as_string();
         const int range = get_parameter("range").as_int();
         const double output_data_rate = get_parameter("output_data_rate").as_double();
         const double publish_rate = get_parameter("publish_rate").as_double();
         
-        accelerometer_ = std::make_unique<sen0140_ros2::H3LIS200DL>(i2c_device, static_cast<uint8_t>(i2c_address));
+        
 
         // User input checking output data rate
-        OutputDataRate output_data_rate_e; 
+        sen0412_ros2::OutputDataRate output_data_rate_e; 
         switch (static_cast<OutputDataRate>(output_data_rate)) {
             case OutputDataRate::e0HZ:
             case OutputDataRate::e0_5HZ:
@@ -54,7 +56,7 @@ public:
                 throw std::runtime_error("Invalid output data rate for H3LIS200DL");
         }
 
-        Range range_e;
+        sen0412_ros2::Range range_e;
         switch (static_cast<Range>(range)) {
             case Range::e100g:
             case Range::e200g:
@@ -64,17 +66,21 @@ public:
                 throw std::runtime_error("Invalid range for H3LIS200DL");
         }
 
+        accelerometer_ = std::make_unique<sen0412_ros2::H3LIS200DL>(i2c_device, static_cast<uint8_t>(i2c_address));
+
         accelerometer_->initialize(output_data_rate_e, range_e);
 
         accelerometer_publisher_ = create_publisher<sensor_msgs::msg::Imu>("accelerometer", rclcpp::SensorDataQoS());
 
-        const auto period = std::chrono::duration<double>(1.0 / mag_publish_rate);
+        const auto period = std::chrono::duration<double>(1.0 / publish_rate);
 
-        accelerometer_timer_ = create_wall_timer(period, std::bind(&Sen0412Node::read, this))
+        accelerometer_timer_ = create_wall_timer(period, std::bind(&Sen0412Node::read, this));
+    
+    }
 
 private:
     void read(){
-        Acceleration acceleration = accelerometer->read()
+        Acceleration acceleration = accelerometer_->read();
 
         // Create ROS2 message
         sensor_msgs::msg::Imu msg;
@@ -90,7 +96,7 @@ private:
         msg.orientation_covariance[0] = -1.0;
 
         // publish message
-        accelerometer_publisher_.publish(msg);
+        accelerometer_publisher_->publish(msg);
 
     }
 
@@ -100,16 +106,15 @@ private:
 
     rclcpp::TimerBase::SharedPtr accelerometer_timer_;
 
-    std::string frame_id;
+    std::string frame_id; 
 };
+}
         
 int main(int argc, char ** argv)
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<Sen0412Node>());
+    rclcpp::spin(std::make_shared<sen0412_ros2::Sen0412Node>());
     rclcpp::shutdown();
 
     return 0;
 }
-
-};
