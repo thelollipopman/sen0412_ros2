@@ -165,7 +165,6 @@ Acceleration H3LIS200DL::read(){
     double x_accel = static_cast<int8_t>(read_register(REG_OUT_X)) * lsb_to_g * g_to_ms2;
     double y_accel = static_cast<int8_t>(read_register(REG_OUT_Y)) * lsb_to_g * g_to_ms2;
     double z_accel = static_cast<int8_t>(read_register(REG_OUT_Z)) * lsb_to_g * g_to_ms2;
-    std::cout << x_accel << std::endl;
     return {
         x_accel,
         y_accel,
