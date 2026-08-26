@@ -117,7 +117,7 @@ void H3LIS200DL::read_registers(
 
 uint8_t H3LIS200DL::read_register(uint8_t reg)
 {
-    uint8_t value;
+    uint8_t value {};
 
     // Read 1 register into value
     read_registers(reg, &value, 1);
