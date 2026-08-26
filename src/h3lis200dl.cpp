@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <vector>
 #include <cmath>
+#include <iostream>
 
 namespace sen0412_ros2 {
 
@@ -14,7 +15,7 @@ namespace sen0412_ros2 {
 H3LIS200DL::H3LIS200DL(
     const std::string& i2c_device, 
     uint8_t i2c_address): 
-    fd_{-1}, range_{100}
+    fd_{-1}, range_{200.0}
 {
     // Open I2C device file with read + write permissions, save file descriptor
     fd_ = ::open(i2c_device.c_str(), O_RDWR);
@@ -121,6 +122,8 @@ uint8_t H3LIS200DL::read_register(uint8_t reg)
     // Read 1 register into value
     read_registers(reg, &value, 1);
 
+    std::cout << value << std::endl;
+
     return value;
 }
 
@@ -157,11 +160,12 @@ void H3LIS200DL::set_range(RangeMask range_mask){
 }
 
 Acceleration H3LIS200DL::read(){
-    double lsb_to_g = static_cast<double>(range_) / 128;
+    double lsb_to_g = range_ / 128;
     double g_to_ms2 = 9.80665;
     double x_accel = static_cast<int8_t>(read_register(REG_OUT_X)) * lsb_to_g * g_to_ms2;
     double y_accel = static_cast<int8_t>(read_register(REG_OUT_Y)) * lsb_to_g * g_to_ms2;
     double z_accel = static_cast<int8_t>(read_register(REG_OUT_Z)) * lsb_to_g * g_to_ms2;
+    std::cout << x_accel << std::endl;
     return {
         x_accel,
         y_accel,
