@@ -42,7 +42,7 @@ ament_target_dependencies(sen0412_node
 # Install executable/library
 install(
   TARGETS
-    sen0412_sensors
+    sen0412_sensor
     sen0412_node
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
